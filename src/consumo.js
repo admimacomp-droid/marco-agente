@@ -68,11 +68,11 @@ export const HERRAMIENTAS = {
   // ===== GRANALLADO / ARENADO (chorro abrasivo) =====
   // El consumo depende fuertemente del diámetro de boquilla y presión.
   // Valores a 7 bar aprox. Boquillas mayores = consumo mucho mayor.
-  "arenadora_boquilla_3mm":  { nombre: "Arenadora/granalladora boquilla 1/8\" (3.2mm)",  consumo_cfm: 25,  presion_bar: 7, ciclo: 0.8, cat: "tratamiento_superficies" },
-  "arenadora_boquilla_5mm":  { nombre: "Arenadora/granalladora boquilla 3/16\" (4.8mm)", consumo_cfm: 55,  presion_bar: 7, ciclo: 0.8, cat: "tratamiento_superficies" },
-  "arenadora_boquilla_6mm":  { nombre: "Arenadora/granalladora boquilla 1/4\" (6.4mm)",  consumo_cfm: 95,  presion_bar: 7, ciclo: 0.8, cat: "tratamiento_superficies" },
-  "arenadora_boquilla_8mm":  { nombre: "Arenadora/granalladora boquilla 5/16\" (8mm)",   consumo_cfm: 150, presion_bar: 7, ciclo: 0.8, cat: "tratamiento_superficies" },
-  "arenadora_boquilla_9mm":  { nombre: "Arenadora/granalladora boquilla 3/8\" (9.5mm)",  consumo_cfm: 220, presion_bar: 7, ciclo: 0.8, cat: "tratamiento_superficies" },
+  "arenadora_boquilla_3mm":  { nombre: "Arenadora/granalladora boquilla 1/8\" (3.2mm)",  consumo_cfm: 25,  presion_bar: 7, ciclo: 0.8, cat: "tratamiento_superficies", alias: ["arenadora 1/8", "granalladora 1/8", "boquilla 3mm", "boquilla 3.2", "arenadora 3mm"] },
+  "arenadora_boquilla_5mm":  { nombre: "Arenadora/granalladora boquilla 3/16\" (4.8mm)", consumo_cfm: 55,  presion_bar: 7, ciclo: 0.8, cat: "tratamiento_superficies", alias: ["arenadora 3/16", "granalladora 3/16", "boquilla 5mm", "boquilla 4.8", "arenadora 5mm"] },
+  "arenadora_boquilla_6mm":  { nombre: "Arenadora/granalladora boquilla 1/4\" (6.4mm)",  consumo_cfm: 95,  presion_bar: 7, ciclo: 0.8, cat: "tratamiento_superficies", alias: ["arenadora 1/4", "granalladora 1/4", "boquilla 6mm", "boquilla 6.4", "arenadora 6mm", "cuarto de pulgada"] },
+  "arenadora_boquilla_8mm":  { nombre: "Arenadora/granalladora boquilla 5/16\" (8mm)",   consumo_cfm: 150, presion_bar: 7, ciclo: 0.8, cat: "tratamiento_superficies", alias: ["arenadora 5/16", "granalladora 5/16", "boquilla 8mm", "arenadora 8mm"] },
+  "arenadora_boquilla_9mm":  { nombre: "Arenadora/granalladora boquilla 3/8\" (9.5mm)",  consumo_cfm: 220, presion_bar: 7, ciclo: 0.8, cat: "tratamiento_superficies", alias: ["arenadora 3/8", "granalladora 3/8", "boquilla 9mm", "boquilla 9.5", "arenadora 9mm"] },
   "cabina_granallado":       { nombre: "Cabina de granallado (sistema Venturi/aspiración)", consumo_cfm: 20, presion_bar: 6, ciclo: 0.8, cat: "tratamiento_superficies" },
   "shot_peening":            { nombre: "Equipo de shot peening",          consumo_cfm: 60,  presion_bar: 7, ciclo: 0.8, cat: "tratamiento_superficies" },
   "aerogomado":              { nombre: "Equipo de aerogomado/hidrogomado", consumo_cfm: 18, presion_bar: 8, ciclo: 0.8, cat: "tratamiento_superficies" },
@@ -229,26 +229,40 @@ export function calcularConsumo({ items = [], industria, factor_simultaneidad, f
 // Búsqueda por puntaje: la entrada del usuario se separa en palabras
 // y se elige la herramienta cuyo nombre+id matchee más palabras.
 function buscarHerramienta(nombreUsuario) {
-  const palabras = normalizar(nombreUsuario).split(/[\s\/"-]+/).filter((p) => p.length > 1);
+  const entrada = normalizar(nombreUsuario);
+  const palabras = entrada.split(/[\s\/"-]+/).filter((p) => p.length > 1);
   if (!palabras.length) return null;
+
+  // Detectar fracciones tipo 1/4, 3/8, 3/16, 5/16, 1/8 en la entrada original
+  const fraccion = (nombreUsuario.match(/\b\d+\/\d+\b/) || [])[0];
 
   let mejor = null;
   let mejorPuntaje = 0;
 
   for (const [id, h] of Object.entries(HERRAMIENTAS)) {
     const texto = normalizar(h.nombre + " " + id.replace(/_/g, " "));
+    const aliasTexto = (h.alias || []).map(normalizar);
     let puntaje = 0;
+
+    // Coincidencia fuerte por alias exacto
+    for (const a of aliasTexto) {
+      if (entrada.includes(a)) puntaje += 5;
+    }
+    // Coincidencia de fracción de boquilla (muy específica)
+    if (fraccion && (h.nombre.includes(fraccion) || aliasTexto.some((a) => a.includes(fraccion)))) {
+      puntaje += 6;
+    }
+    // Coincidencia por palabras
     for (const p of palabras) {
       if (texto.includes(p)) puntaje++;
     }
-    // bonus si todas las palabras del usuario están presentes
     if (puntaje === palabras.length) puntaje += 2;
+
     if (puntaje > mejorPuntaje) {
       mejorPuntaje = puntaje;
       mejor = h;
     }
   }
-  // exigir al menos 1 palabra coincidente significativa
   return mejorPuntaje >= 1 ? mejor : null;
 }
 
