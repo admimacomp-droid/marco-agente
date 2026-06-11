@@ -8,6 +8,42 @@
 
 export const TOOLS = [
   {
+    name: "calcular_consumo",
+    description:
+      "Calcula el consumo de aire comprimido proyectado a partir de las herramientas neumáticas Y/O " +
+      "máquinas industriales que usará el cliente (llaves de impacto, pistolas de pintura incluidas " +
+      "electrostáticas, arenadoras/granalladoras por tamaño de boquilla, prensas, envasadoras, sopladoras " +
+      "PET, CNC, telares, sillones dentales, transporte neumático, etc.). Aplica factor de simultaneidad " +
+      "SEGÚN LA INDUSTRIA del cliente (taller_automotriz, metalmecanica, pintura_acabados, " +
+      "tratamiento_superficies, construccion, mineria, alimentos_bebidas, plasticos, farmaceutica, " +
+      "dental_clinicas, textil, carpinteria_mueble) y factor de servicio estándar (1.30). " +
+      "Devuelve CFM/l/min/m³min proyectado, presión requerida y alertas (oil-free, alta presión). " +
+      "Úsala siempre que el cliente mencione qué equipos usará. Pasa la industria si la conoces.",
+    input_schema: {
+      type: "object",
+      properties: {
+        items: {
+          type: "array",
+          description: "Lista de herramientas/máquinas que usará el cliente",
+          items: {
+            type: "object",
+            properties: {
+              nombre: { type: "string", description: "Nombre del equipo, ej: 'llave de impacto 1/2', 'pistola electrostática', 'arenadora boquilla 6mm', 'envasadora', 'sopladora PET'" },
+              cantidad: { type: "number", description: "Cuántas unidades (default 1)" },
+              consumo_cfm: { type: "number", description: "Opcional: consumo en CFM si el cliente lo conoce de su ficha técnica" },
+              presion_bar: { type: "number", description: "Opcional: presión de trabajo si el cliente la conoce" },
+            },
+            required: ["nombre"],
+          },
+        },
+        industria: { type: "string", description: "Industria/rubro del cliente para aplicar el factor de simultaneidad correcto, ej: 'taller_automotriz', 'mineria', 'alimentos_bebidas', 'dental_clinicas'" },
+        factor_simultaneidad: { type: "number", description: "Opcional: si el cliente conoce su propio factor (0-1), ese manda" },
+        factor_servicio: { type: "number", description: "Opcional: margen de seguridad (default 1.30)" },
+      },
+      required: ["items"],
+    },
+  },
+  {
     name: "buscar_conocimiento",
     description:
       "Busca información técnica en la base de conocimiento de IMACOMP " +

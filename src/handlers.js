@@ -3,6 +3,7 @@
 // ============================================================
 import { google } from "googleapis";
 import { searchKnowledge } from "./rag.js";
+import { calcularConsumo } from "./consumo.js";
 
 // ----- Catálogo simplificado para recomendación (ajusta a tu realidad) -----
 const LINEAS = {
@@ -196,6 +197,7 @@ export async function ejecutarTool(name, input) {
       case "estimar_roi":         return await estimarRoi(input);
       case "diagnostico_preliminar": return await diagnosticoPreliminar(input);
       case "guardar_lead":        return await guardarLead(input);
+      case "calcular_consumo":    return calcularConsumo(input);
       case "agendar_reunion":     return await agendarReunion(input);
       default: return { error: `Tool desconocida: ${name}` };
     }
