@@ -1,18 +1,19 @@
 {
   "name": "marco-agente-imacomp",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
-  "description": "Asesor técnico agéntico de IMACOMP para soluciones.imacomp.cl",
+  "description": "Backend agéntico de Marco — asesor técnico de aire comprimido IMACOMP",
+  "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
-    "build-index": "node src/build-index.js"
+    "dev": "node --watch src/server.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.32.0",
-    "cors": "^2.8.5",
-    "express": "^4.21.0",
-    "googleapis": "^144.0.0",
-    "pdf-parse": "^1.1.1"
+    "cors": "^2.8.6",
+    "express": "^4.22.2",
+    "nodemailer": "^6.10.1"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
